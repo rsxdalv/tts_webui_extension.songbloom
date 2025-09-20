@@ -6,9 +6,7 @@ def songbloom_ui():
         """
     # Songbloom
     
-    This is a template extension. Replace this content with your extension's functionality.
-    
-    To use it, simply modify this UI and add your custom logic.
+    This extension is still in development. Please check back later for updates!
     """
     )
     
