@@ -1,31 +1,5 @@
 import gradio as gr
-
-
-def songbloom_ui():
-    gr.Markdown(
-        """
-    # Songbloom
-    
-    This extension is still in development. Please check back later for updates!
-    """
-    )
-    
-    # Add your UI components here
-    # Example:
-    # with gr.Row():
-    #     with gr.Column():
-    #         input_text = gr.Textbox(label="Input")
-    #         button = gr.Button("Process")
-    #     with gr.Column():
-    #         output_text = gr.Textbox(label="Output")
-    # 
-    # button.click(
-    #     fn=your_processing_function,
-    #     inputs=[input_text],
-    #     outputs=[output_text],
-    #     api_name="songbloom",
-    # )
-
+from .gradio_ui import songbloom_ui
 
 def extension__tts_generation_webui():
     songbloom_ui()

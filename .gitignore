@@ -27,3 +27,5 @@ ENV/
 data/api/presets
 
 config.json
+
+cache/

@@ -7,8 +7,8 @@ README = (HERE / "README.md").read_text(encoding="utf-8") if (HERE / "README.md"
 setuptools.setup(
     name="tts_webui_extension.songbloom",
     packages=setuptools.find_namespace_packages(),
-    version="0.0.1",
-    author="Your Name",
+    version="0.0.2",
+    author="rsxdalv",
     description="A template extension for TTS Generation WebUI",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -16,9 +16,7 @@ setuptools.setup(
     project_urls={},
     scripts=[],
     install_requires=[
-        # Add your dependencies here
-        # "numpy",
-        # "torch",
+        "tts-webui.songbloom @ git+https://github.com/rsxdalv/tts-webui.songbloom@loose",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
