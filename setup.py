@@ -16,7 +16,7 @@ setuptools.setup(
     project_urls={},
     scripts=[],
     install_requires=[
-        "tts-webui.songbloom @ git+https://github.com/rsxdalv/tts-webui.songbloom@loose",
+        "tts-webui.songbloom @ git+https://github.com/rsxdalv/tts-webui.songbloom@main",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
