@@ -204,9 +204,19 @@ def generate_music(
     prompt_audio: Optional[str],
     model_name: str,
     dtype: str,
+    cfg_coef,
+    steps,
+    dit_cfg_type,
+    use_sampling,
+    top_k,
+    max_duration,
+    temp,
+    diff_temp,
+    penalty_repeat,
+    penalty_window,
 ) -> Optional[str]:
     songbloom_interface = get_songbloom_interface()
-    return songbloom_interface.generate_music(lyrics, prompt_audio, model_name, dtype)
+    return songbloom_interface.generate_music(lyrics, prompt_audio, model_name, dtype, cfg_coef, steps, dit_cfg_type, use_sampling, top_k, max_duration, temp, diff_temp, penalty_repeat, penalty_window)
 
 
 def songbloom_ui():
