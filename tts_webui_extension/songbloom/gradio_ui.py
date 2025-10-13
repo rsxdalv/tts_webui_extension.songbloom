@@ -61,6 +61,7 @@ class SongBloomInterface:
         self.model = None
         self.current_model_name = None
         self.sample_rate = 44100
+        self.omega_resolvers_registered = False
 
     def hf_download(
         self, model_name: str = "songbloom_full_150s", **kwargs
@@ -73,17 +74,19 @@ class SongBloomInterface:
 
     def load_config(self, cfg_file: str) -> DictConfig:
         """Load configuration file with proper resolvers."""
-        OmegaConf.register_new_resolver("eval", lambda x: eval(x))
-        OmegaConf.register_new_resolver(
-            "concat", lambda *x: [xxx for xx in x for xxx in xx]
-        )
-        OmegaConf.register_new_resolver(
-            "get_fname", lambda x: os.path.splitext(os.path.basename(x))[0]
-        )
-        OmegaConf.register_new_resolver("load_yaml", lambda x: OmegaConf.load(x))
-        OmegaConf.register_new_resolver(
-            "dynamic_path", lambda x: x.replace("???", str(self.cache_dir))
-        )
+        if not self.omega_resolvers_registered:
+            OmegaConf.register_new_resolver("eval", lambda x: eval(x))
+            OmegaConf.register_new_resolver(
+                "concat", lambda *x: [xxx for xx in x for xxx in xx]
+            )
+            OmegaConf.register_new_resolver(
+                "get_fname", lambda x: os.path.splitext(os.path.basename(x))[0]
+            )
+            OmegaConf.register_new_resolver("load_yaml", lambda x: OmegaConf.load(x))
+            OmegaConf.register_new_resolver(
+                "dynamic_path", lambda x: x.replace("???", str(self.cache_dir))
+            )
+            self.omega_resolvers_registered = True
 
         file_cfg = (
             OmegaConf.load(open(cfg_file, "r"))
@@ -122,6 +125,16 @@ class SongBloomInterface:
         prompt_audio: Optional[str],
         model_name: str,
         dtype: str,
+        cfg_coef = 1.5,
+        steps = 36,
+        dit_cfg_type = 'h',
+        use_sampling = True,
+        top_k = 100,
+        max_duration = 150,
+        temp = 0.9,
+        diff_temp = 0.95,
+        penalty_repeat = True,
+        penalty_window = 50,
         progress=gr.Progress(),
     ) -> Tuple[str, Optional[str]]:
         """Generate a single music sample from lyrics and prompt audio."""
@@ -133,6 +146,11 @@ class SongBloomInterface:
         if prompt_audio is None:
             gr.Info("Please upload a prompt audio file.")
             return None
+
+        max_frames = max_duration * 25
+        self.model.set_generation_params(cfg_coef=cfg_coef, steps=steps, dit_cfg_type=dit_cfg_type,
+                                   use_sampling=use_sampling, top_k=top_k, max_frames=max_frames, temp=temp, diff_temp=diff_temp,
+                                   penalty_repeat=penalty_repeat, penalty_window=penalty_window)
 
         # Load model
         progress(0.1, desc="Loading model...")
@@ -224,6 +242,80 @@ def songbloom_ui():
 
                 generate_btn = gr.Button("🎵 Generate Music", variant="primary")
 
+            with gr.Accordion("Advanced Options", open=False):
+                cfg_coef = gr.Slider(
+                    minimum=0.0,
+                    maximum=5.0,
+                    value=1.5,
+                    step=0.1,
+                    label="Classifier-Free Guidance Scale",
+                    info="Higher values increase adherence to lyrics but may reduce quality",
+                )
+                steps = gr.Slider(
+                    minimum=10,
+                    maximum=100,
+                    value=36,
+                    step=1,
+                    label="Sampling Steps",
+                    info="Number of diffusion steps (more steps can improve quality)",
+                )
+                dit_cfg_type = gr.Radio(
+                    choices=['h', 'global', 'none'],
+                    value='h',
+                    label="DiT CFG Type",
+                )
+                use_sampling = gr.Checkbox(
+                    value=True,
+                    label="Use Sampling",
+                    info="Whether to use sampling during generation",
+                )
+                top_k = gr.Slider(
+                    minimum=50,
+                    maximum=500,
+                    value=100,
+                    step=10,
+                    label="Top-K Sampling",
+                    info="Restrict sampling to the top K tokens (lower values increase diversity)",
+                )
+                max_duration = gr.Slider(
+                    minimum=30,
+                    maximum=300,
+                    value=150,
+                    step=10,
+                    label="Max Duration (seconds)",
+                    info="Maximum duration of the generated audio in seconds",
+                )
+                temp = gr.Slider(
+                    minimum=0.0,
+                    maximum=1.0,
+                    value=0.9,
+                    step=0.1,
+                    label="Temperature",
+                    info="Higher values produce more random outputs",
+                )
+                # diff_temp: 0.95
+                diff_temp = gr.Slider(
+                    minimum=0.0,
+                    maximum=1.0,
+                    value=0.95,
+                    step=0.01,
+                    label="Diffusion Temperature",
+                    info="Temperature for the diffusion process",
+                )
+                # penalty_repeat: True
+                penalty_repeat = gr.Checkbox(
+                    value=True,
+                    label="Penalty Repeat",
+                )
+                # penalty_window: 50
+                penalty_window = gr.Slider(
+                    minimum=10,
+                    maximum=200,
+                    value=50,
+                    step=10,
+                    label="Penalty Window",
+                )
+
         with gr.Column(scale=1):
             audio_output = gr.Audio(label="Sample 1", interactive=False)
 
@@ -234,6 +326,16 @@ def songbloom_ui():
             prompt_audio,
             model_dropdown,
             dtype_radio,
+            cfg_coef,
+            steps,
+            dit_cfg_type,
+            use_sampling,
+            top_k,
+            max_duration,
+            temp,
+            diff_temp,
+            penalty_repeat,
+            penalty_window,
         ],
         outputs=[audio_output],
     )
