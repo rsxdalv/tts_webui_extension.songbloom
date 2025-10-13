@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tts_webui_extension.songbloom"
-version = "0.1.1"
+version = "0.1.2"
 description = "A template extension for TTS Generation WebUI"
 readme = "README.md"
 authors = [{ name = "rsxdalv" }]

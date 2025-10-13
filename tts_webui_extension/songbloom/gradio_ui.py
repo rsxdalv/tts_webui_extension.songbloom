@@ -147,11 +147,6 @@ class SongBloomInterface:
             gr.Info("Please upload a prompt audio file.")
             return None
 
-        max_frames = max_duration * 25
-        self.model.set_generation_params(cfg_coef=cfg_coef, steps=steps, dit_cfg_type=dit_cfg_type,
-                                   use_sampling=use_sampling, top_k=top_k, max_frames=max_frames, temp=temp, diff_temp=diff_temp,
-                                   penalty_repeat=penalty_repeat, penalty_window=penalty_window)
-
         # Load model
         progress(0.1, desc="Loading model...")
         load_status = self.load_model(model_name, dtype)
@@ -162,6 +157,11 @@ class SongBloomInterface:
         if self.model is None:
             gr.Info("Model failed to load.")
             return None
+
+        max_frames = max_duration * 25
+        self.model.set_generation_params(cfg_coef=cfg_coef, steps=steps, dit_cfg_type=dit_cfg_type,
+                                   use_sampling=use_sampling, top_k=top_k, max_frames=max_frames, temp=temp, diff_temp=diff_temp,
+                                   penalty_repeat=penalty_repeat, penalty_window=penalty_window)
 
         progress(0.3, desc="Processing audio...")
 
