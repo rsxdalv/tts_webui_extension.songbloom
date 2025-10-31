@@ -182,16 +182,9 @@ class SongBloomInterface:
         # Generate single sample
         wav = self.model.generate(lyrics, prompt_wav)
 
-        # Save to temporary file
-        with tempfile.NamedTemporaryFile(
-            suffix=f"_sample_0.flac", delete=False
-        ) as tmp_file:
-            output_path = tmp_file.name
-            torchaudio.save(output_path, wav[0].cpu().float(), self.sample_rate)
-
         progress(1.0, desc="Complete!")
 
-        return output_path
+        return (self.sample_rate, wav[0].cpu().float())
 
 
 @functools.lru_cache(maxsize=1)
