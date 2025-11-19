@@ -18,8 +18,8 @@ from .disable_flash_attention import disable_flash_attention_decorator
 NAME2REPO = {
     "songbloom_full_150s": "CypressYang/SongBloom",
     "songbloom_full_150s_dpo": "CypressYang/SongBloom",
+    "songbloom_full_240s": "CypressYang/SongBloom_long",
 }
-
 
 def hf_download(
     model_name: str = "songbloom_full_150s",
@@ -30,6 +30,8 @@ def hf_download(
     repo_id = NAME2REPO[model_name]
     cache_dir_path = Path(cache_dir)
     cache_dir_path.mkdir(exist_ok=True)
+
+    # kwargs for a specific model repo
     hf_kwargs = {
         "repo_id": repo_id,
         "local_dir": cache_dir,
@@ -37,13 +39,22 @@ def hf_download(
         **kwargs,
     }
 
+    # kwargs for the common repo where shared files are
+    common_hf_kwargs = {
+        "repo_id": "CypressYang/SongBloom",
+        "local_dir": cache_dir,
+        "local_dir_use_symlinks": False,
+        **kwargs,
+    }
+
+    # get the specific desired config and checkpoint
     cfg_path = hf_hub_download(filename=f"{model_name}.yaml", **hf_kwargs)
     ckpt_path = hf_hub_download(filename=f"{model_name}.pt", **hf_kwargs)
-    vae_cfg_path = hf_hub_download(filename="stable_audio_1920_vae.json", **hf_kwargs)
-    vae_ckpt_path = hf_hub_download(
-        filename="autoencoder_music_dsp1920.ckpt", **hf_kwargs
-    )
-    g2p_path = hf_hub_download(filename="vocab_g2p.yaml", **hf_kwargs)
+
+    # get the shared VAE and G2P files
+    vae_cfg_path = hf_hub_download(filename="stable_audio_1920_vae.json", **common_hf_kwargs)
+    vae_ckpt_path = hf_hub_download(filename="autoencoder_music_dsp1920.ckpt", **common_hf_kwargs)
+    g2p_path = hf_hub_download(filename="vocab_g2p.yaml", **common_hf_kwargs)
 
     return {
         "config": cfg_path,
@@ -230,7 +241,7 @@ def songbloom_ui():
                 label="Lyrics",
                 placeholder="Enter your lyrics here...",
                 lines=6,
-                info="The lyrics for the song you want to generate",
+                info="The lyrics for the song you want to generate. Note for 150s model, each tag corresponds to 1 second of audio, whereas the 240s model each tag corresponds to 5 seconds of audio.",
             )
 
             prompt_audio = gr.Audio(label="Prompt Audio", type="filepath")
@@ -282,11 +293,11 @@ def songbloom_ui():
                 )
                 max_duration = gr.Slider(
                     minimum=30,
-                    maximum=300,
+                    maximum=240,
                     value=150,
                     step=10,
                     label="Max Duration (seconds)",
-                    info="Maximum duration of the generated audio in seconds",
+                    info="Maximum duration of the generated audio in seconds. Use 240s model for durations over 150s.",
                 )
                 temp = gr.Slider(
                     minimum=0.0,
