@@ -184,7 +184,7 @@ class SongBloomInterface:
 
         progress(1.0, desc="Complete!")
 
-        return (self.sample_rate, wav[0].cpu().float())
+        return (self.sample_rate, wav[0].cpu().float().numpy())
 
 
 @functools.lru_cache(maxsize=1)
